@@ -39,6 +39,9 @@ export default function AppHeader() {
           <Button variant="outline" size="sm" onClick={openAddModal}>
             Add Purchase
           </Button>
+          <Link href="/settings" className={`${styles.actionLink} ${styles.mobileOnly}`}>
+            Settings
+          </Link>
         </div>
       </div>
     </header>
