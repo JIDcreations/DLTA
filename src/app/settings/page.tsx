@@ -1,11 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 import { useShallow } from "zustand/shallow";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
+import Input from "@/components/ui/Input";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+import { pullPortfolio, pushPortfolio } from "@/lib/portfolioCloud";
+import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
   const { preferences, setPreferences, reset, cachedPrices, lots, importState } =
@@ -21,6 +25,23 @@ export default function SettingsPage() {
     );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const supabase = getSupabaseClient();
+
+  const [email, setEmail] = useState("");
+  const [session, setSession] = useState<Session | null>(null);
+  const [authStatus, setAuthStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [authMessage, setAuthMessage] = useState("");
+  const [syncStatus, setSyncStatus] = useState<"idle" | "pulling" | "pushing" | "error">("idle");
+  const [syncMessage, setSyncMessage] = useState("");
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+    return () => authListener.subscription.unsubscribe();
+  }, [supabase]);
 
   const handleExport = () => {
     const payload = JSON.stringify(
@@ -64,6 +85,75 @@ export default function SettingsPage() {
     }
   };
 
+  const sendMagicLink = async () => {
+    if (!supabase) return;
+    if (!email) {
+      setAuthStatus("error");
+      setAuthMessage("Enter an email address first.");
+      return;
+    }
+    setAuthStatus("sending");
+    setAuthMessage("");
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/settings`,
+      },
+    });
+    if (error) {
+      setAuthStatus("error");
+      setAuthMessage(error.message);
+      return;
+    }
+    setAuthStatus("sent");
+    setAuthMessage("Magic link sent. Check your inbox.");
+  };
+
+  const signOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+  };
+
+  const handlePush = async () => {
+    setSyncStatus("pushing");
+    setSyncMessage("");
+    try {
+      await pushPortfolio({
+        schemaVersion: 2,
+        lots,
+        preferences,
+        cachedPrices,
+      });
+      setSyncStatus("idle");
+      setSyncMessage("Cloud updated.");
+    } catch (error) {
+      setSyncStatus("error");
+      setSyncMessage((error as Error).message);
+    }
+  };
+
+  const handlePull = async () => {
+    setSyncStatus("pulling");
+    setSyncMessage("");
+    try {
+      const cloudState = await pullPortfolio();
+      if (!cloudState) {
+        setSyncStatus("idle");
+        setSyncMessage("No cloud data yet.");
+        return;
+      }
+      const confirmed = window.confirm("Replace local data with cloud data?");
+      if (confirmed) {
+        importState(cloudState);
+        setSyncMessage("Local data updated from cloud.");
+      }
+      setSyncStatus("idle");
+    } catch (error) {
+      setSyncStatus("error");
+      setSyncMessage((error as Error).message);
+    }
+  };
+
   return (
     <div className={styles.page}>
       <section className={styles.header}>
@@ -103,6 +193,49 @@ export default function SettingsPage() {
           />
           <span>Show lot notes</span>
         </label>
+      </section>
+
+      <section className={styles.card}>
+        <h3>Cloud sync</h3>
+        {!supabase ? (
+          <p className="muted">Supabase is not configured.</p>
+        ) : session ? (
+          <div className={styles.syncBlock}>
+            <div className={styles.syncRow}>
+              <div>
+                <div className={styles.syncLabel}>Signed in</div>
+                <div className={styles.syncValue}>{session.user.email}</div>
+              </div>
+              <Button variant="outline" onClick={signOut}>
+                Sign out
+              </Button>
+            </div>
+            <div className={styles.syncActions}>
+              <Button variant="outline" onClick={handlePull} disabled={syncStatus === "pulling"}>
+                {syncStatus === "pulling" ? "Syncing..." : "Pull from cloud"}
+              </Button>
+              <Button variant="outline" onClick={handlePush} disabled={syncStatus === "pushing"}>
+                {syncStatus === "pushing" ? "Uploading..." : "Push to cloud"}
+              </Button>
+            </div>
+            {syncMessage ? <div className={styles.syncMessage}>{syncMessage}</div> : null}
+          </div>
+        ) : (
+          <div className={styles.syncBlock}>
+            <div className={styles.syncRow}>
+              <Input
+                type="email"
+                placeholder="you@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button onClick={sendMagicLink} disabled={authStatus === "sending"}>
+                {authStatus === "sending" ? "Sending..." : "Send magic link"}
+              </Button>
+            </div>
+            {authMessage ? <div className={styles.syncMessage}>{authMessage}</div> : null}
+          </div>
+        )}
       </section>
 
       <section className={styles.card}>
