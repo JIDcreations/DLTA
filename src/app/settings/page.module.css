@@ -71,3 +71,20 @@
   font-size: var(--text-xs);
   color: var(--text-muted);
 }
+
+.syncStatusLine {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(10, 16, 24, 0.55);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.syncStatusValue {
+  color: var(--text);
+  font-weight: 600;
+}

@@ -12,7 +12,19 @@ import { pullPortfolio, pushPortfolio } from "@/lib/portfolioCloud";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
-  const { preferences, setPreferences, reset, cachedPrices, lots, importState } =
+  const {
+    preferences,
+    setPreferences,
+    reset,
+    cachedPrices,
+    lots,
+    importState,
+    applyCloudState,
+    setCloudSyncISO,
+    schemaVersion,
+    lastLocalChangeISO,
+    lastCloudSyncISO,
+  } =
     usePortfolioStore(
       useShallow((state) => ({
         preferences: state.preferences,
@@ -21,6 +33,11 @@ export default function SettingsPage() {
         cachedPrices: state.cachedPrices,
         lots: state.lots,
         importState: state.importState,
+        applyCloudState: state.applyCloudState,
+        setCloudSyncISO: state.setCloudSyncISO,
+        schemaVersion: state.schemaVersion,
+        lastLocalChangeISO: state.lastLocalChangeISO,
+        lastCloudSyncISO: state.lastCloudSyncISO,
       }))
     );
 
@@ -34,6 +51,13 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "pulling" | "pushing" | "error">("idle");
   const [syncMessage, setSyncMessage] = useState("");
 
+  const formatSyncTime = (iso?: string) => {
+    if (!iso) return "Never";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "Never";
+    return date.toLocaleTimeString();
+  };
+
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -46,7 +70,7 @@ export default function SettingsPage() {
   const handleExport = () => {
     const payload = JSON.stringify(
       {
-        schemaVersion: 2,
+        schemaVersion: 3,
         lots,
         preferences,
         cachedPrices,
@@ -118,12 +142,15 @@ export default function SettingsPage() {
     setSyncStatus("pushing");
     setSyncMessage("");
     try {
-      await pushPortfolio({
-        schemaVersion: 2,
+      const updatedAtISO = await pushPortfolio({
+        schemaVersion,
         lots,
         preferences,
         cachedPrices,
+        lastLocalChangeISO,
+        lastCloudSyncISO,
       });
+      setCloudSyncISO(updatedAtISO);
       setSyncStatus("idle");
       setSyncMessage("Cloud updated.");
     } catch (error) {
@@ -136,15 +163,15 @@ export default function SettingsPage() {
     setSyncStatus("pulling");
     setSyncMessage("");
     try {
-      const cloudState = await pullPortfolio();
-      if (!cloudState) {
+      const cloud = await pullPortfolio();
+      if (!cloud) {
         setSyncStatus("idle");
         setSyncMessage("No cloud data yet.");
         return;
       }
       const confirmed = window.confirm("Replace local data with cloud data?");
       if (confirmed) {
-        importState(cloudState);
+        applyCloudState(cloud.state, cloud.updatedAtISO);
         setSyncMessage("Local data updated from cloud.");
       }
       setSyncStatus("idle");
@@ -201,6 +228,18 @@ export default function SettingsPage() {
           <p className="muted">Supabase is not configured.</p>
         ) : session ? (
           <div className={styles.syncBlock}>
+            <div className={styles.syncStatusLine}>
+              <span>Auto‑sync</span>
+              <span className={styles.syncStatusValue}>On</span>
+            </div>
+            <div className={styles.syncStatusLine}>
+              <span>Last local change</span>
+              <span className={styles.syncStatusValue}>{formatSyncTime(lastLocalChangeISO)}</span>
+            </div>
+            <div className={styles.syncStatusLine}>
+              <span>Last cloud sync</span>
+              <span className={styles.syncStatusValue}>{formatSyncTime(lastCloudSyncISO)}</span>
+            </div>
             <div className={styles.syncRow}>
               <div>
                 <div className={styles.syncLabel}>Signed in</div>
