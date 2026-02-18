@@ -1,0 +1,26 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: rgba(12, 19, 28, 0.65);
+  border: 1px solid var(--border);
+}
+
+.label {
+  font-size: var(--text-xs);
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.value {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.subvalue {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

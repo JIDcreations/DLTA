@@ -1,0 +1,168 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  z-index: 50;
+}
+
+.modal {
+  width: min(920px, 100%);
+  background: rgba(12, 18, 26, 0.96);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: var(--space-6);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.close {
+  font-size: 18px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: var(--space-6);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.modeToggle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(10, 16, 24, 0.6);
+}
+
+.modeLabel {
+  font-size: var(--text-xs);
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.modeButtons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.modeButton {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.modeButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.active {
+  border-color: var(--accent);
+  color: #0c1410;
+  background: var(--accent);
+}
+
+.labelRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.autoTag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(180, 240, 0, 0.18);
+  color: var(--accent);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.warningText {
+  margin-top: 6px;
+  font-size: var(--text-xs);
+  color: var(--warning);
+}
+
+.preview {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(10, 14, 20, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.preview h4 {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.previewCard {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.previewLabel {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+.previewPct {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

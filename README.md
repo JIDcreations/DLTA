@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DLTA (Delta)
 
-## Getting Started
+DLTA is a portfolio-grade crypto tracker that logs multiple purchase lots per coin, computes live profit/loss, and stores everything locally with IndexedDB + LocalStorage fallback. It runs fully client-side and is deployable to Vercel or Netlify without paid services.
 
-First, run the development server:
+## Features
+- Track BTC, ETH, XRP purchases (multiple lots per coin)
+- Weighted average buy, break-even, and per-lot P/L
+- Live prices with caching + offline fallback
+- Premium charts (allocation donut + price history with buy markers)
+- Import/Export JSON + reset
+- Fully responsive, dark premium UI
 
+## Tech Stack
+- Next.js (App Router) + TypeScript
+- Zustand state
+- IndexedDB (with LocalStorage fallback)
+- Recharts + Framer Motion
+- Plain CSS + CSS Modules
+
+## Local Development
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Visit `http://localhost:3000`.
+
+## Production Build
+```bash
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy to Vercel
+1. Push this repo to GitHub.
+2. In Vercel, choose **New Project** and import the repo.
+3. Framework preset: **Next.js** (auto-detected).
+4. Build command: `npm run build`
+5. Output: auto-detected.
+6. Deploy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Netlify
+1. Push this repo to GitHub.
+2. In Netlify, choose **Add new site → Import an existing project**.
+3. Build command: `npm run build`
+4. Publish directory: `.next`
+5. Netlify will use the `@netlify/plugin-nextjs` defined in `netlify.toml`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Free Price API (CoinGecko)
+DLTA uses public CoinGecko endpoints (no API key required):
+- Current prices + 24h change:
+  - `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=eur&include_24hr_change=true`
+- Historical chart data (7d/30d):
+  - `https://api.coingecko.com/api/v3/coins/{id}/market_chart?vs_currency=eur&days=7`
+  - `https://api.coingecko.com/api/v3/coins/{id}/market_chart?vs_currency=eur&days=30`
 
-## Learn More
+## Data Model
+```ts
+CoinSymbol = "BTC" | "ETH" | "XRP"
+PurchaseLot = {
+  id: string
+  symbol: CoinSymbol
+  datetimeISO: string
+  eurSpent: number
+  buyPrice: number
+  quantity: number
+  note?: string
+}
+Preferences = {
+  refreshIntervalSeconds: number
+  showAdvanced: boolean
+  showNotes: boolean
+}
+PortfolioState = {
+  lots: PurchaseLot[]
+  preferences: Preferences
+  cachedPrices: Record<CoinSymbol, { eur: number; change24h?: number; updatedAtISO: string }>
+  schemaVersion: number
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- Stored data works offline (prices show last known values if the API fails).
+- Add more coins by extending `src/lib/coins.ts`.

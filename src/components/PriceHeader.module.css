@@ -1,0 +1,62 @@
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: rgba(12, 18, 26, 0.8);
+  box-shadow: var(--shadow);
+}
+
+.symbol {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.name {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.priceBlock {
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-lg);
+}
+
+.change {
+  font-size: var(--text-xs);
+}
+
+.holdings {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: var(--text-xs);
+  color: var(--text-soft);
+}
+
+@media (max-width: 720px) {
+  .header {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .priceBlock {
+    align-items: flex-start;
+    justify-self: start;
+  }
+
+  .holdings {
+    text-align: left;
+  }
+}

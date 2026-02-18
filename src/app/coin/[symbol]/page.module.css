@@ -1,0 +1,71 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chartSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.warning {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: rgba(242, 201, 76, 0.12);
+  color: var(--warning);
+  border: 1px solid rgba(242, 201, 76, 0.24);
+}
+
+.insights {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.insightCard {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(12, 18, 26, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.insightLabel {
+  font-size: var(--text-xs);
+  color: var(--text-soft);
+}
+
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.invalid {
+  padding: var(--space-7);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: rgba(12, 18, 26, 0.8);
+}
+
+@media (max-width: 720px) {
+  .footerActions {
+    justify-content: flex-start;
+  }
+}
